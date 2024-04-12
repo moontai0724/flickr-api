@@ -20,6 +20,14 @@ export class ActiveRecordFactory {
     ActiveRecordPrototypes[ActiveRecordKeys]
   >();
 
+  getActiveRecords(): ActiveRecordPrototypes {
+    Object.keys(activeRecordPrototypes).forEach((key) => {
+      this.getActiveRecord(key as ActiveRecordKeys);
+    });
+
+    return Object.fromEntries(this.injected) as ActiveRecordPrototypes;
+  }
+
   getActiveRecord<
     Key extends ActiveRecordKeys,
     Proto extends ActiveRecordPrototypes[Key],
