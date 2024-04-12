@@ -5,5 +5,7 @@ export async function create(
   this: typeof PhotoSetActiveRecord,
   ...args: Parameters<PhotoSetRepository["create"]>
 ) {
-  return this.repository.create(...args);
+  const photoSet = await this.repository.create(...args);
+
+  return new this(photoSet, this.repository);
 }
