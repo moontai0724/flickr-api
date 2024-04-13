@@ -8,7 +8,9 @@ export interface PhotoSetCreateOptions {
   /**
    * The id of the photo to represent this set. The photo must belong to the calling user.
    */
-  primaryPhotoId: string;
+  primaryPhoto: {
+    id: string;
+  };
   /**
    * A title for the photoset.
    */
@@ -43,7 +45,7 @@ export async function create(
 
   payload.append("action", "flickr.photosets.create");
 
-  payload.append("primary_photo_id", options.primaryPhotoId);
+  payload.append("primary_photo_id", options.primaryPhoto.id);
   payload.append("title", options.title);
   if (options.description) {
     payload.append("description", options.description);
