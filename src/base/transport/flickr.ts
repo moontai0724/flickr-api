@@ -14,62 +14,58 @@ export interface FlickrTransportOptions {
   apiKey: string;
 }
 
+async function fetchJson<R>(...args: Parameters<typeof fetch>): Promise<R> {
+  const response = await fetch(...args);
+  const data = await response.json();
+
+  if (data.stat !== "ok") {
+    throw new Error(data.message);
+  }
+
+  return data;
+}
+
 export class FlickrTransport implements Transport {
-  public readonly endpoint = new URL("https://api.flickr.com/services/rest");
+  public readonly endpoint = "https://api.flickr.com/services/rest";
 
   constructor(protected options: FlickrTransportOptions) {}
 
-  async get<T>(
-    options: GetOptions,
-  ): Promise<T extends FlickrAPIResponse ? T : never> {
-    const { payload } = options;
-
+  private constructRequest(options: GetOptions | PostOptions) {
     const url = new URL(this.endpoint);
-    const params = new URLSearchParams(payload);
+    const { payload: fromPayload = {} } = options;
+    const payload =
+      fromPayload instanceof FormData ? new FormData() : new URLSearchParams();
 
-    params.append("format", "json");
-    params.append("api_key", this.options.apiKey);
+    Object.entries(fromPayload).forEach(([key, value]) => {
+      payload.append(key, value);
+    });
 
-    url.search = params.toString();
+    payload.append("format", "json");
+    payload.append("api_key", this.options.apiKey);
 
-    const response = await fetch(url.toString());
-    const data = await response.json();
-
-    console.log(data);
-
-    if (data.stat !== "ok") {
-      throw new Error(data.message);
-    }
-
-    return data;
+    return {
+      url,
+      payload,
+    };
   }
 
-  async post<T>(
+  async get<R>(
+    options: GetOptions,
+  ): Promise<R extends FlickrAPIResponse ? R : never> {
+    const { url, payload } = this.constructRequest(options);
+
+    url.search = payload.toString();
+
+    return fetchJson(url);
+  }
+
+  async post<R>(
     options: PostOptions,
-  ): Promise<T extends FlickrAPIResponse ? T : never> {
-    const { payload = {} } = options;
+  ): Promise<R extends FlickrAPIResponse ? R : never> {
+    const { url, payload } = this.constructRequest(options);
 
-    const url = new URL(this.endpoint);
-    const body = new FormData();
-
-    Object.entries(payload).forEach(([key, value]) => {
-      body.append(key, value);
+    return fetchJson(url, {
+      body: payload,
     });
-
-    body.append("format", "json");
-    body.append("api_key", this.options.apiKey);
-
-    const response = await fetch(url.toString(), {
-      body,
-    });
-    const data = await response.json();
-
-    console.log(data);
-
-    if (data.stat !== "ok") {
-      throw new Error(data.message);
-    }
-
-    return data;
   }
 }
