@@ -1,5 +1,5 @@
 {
-  "name": "@moontai0724/package-template",
+  "name": "@moontai0724/flickr-sdk",
   "private": false,
   "publishConfig": {
     "access": "public"
@@ -8,13 +8,13 @@
   "description": "An npm package template.",
   "author": "moontai0724",
   "license": "UNLICENSED",
-  "homepage": "https://moontai0724.github.io/package-template",
+  "homepage": "https://moontai0724.github.io/flickr-sdk",
   "bugs": {
-    "url": "https://github.com/moontai0724/package-template/issues"
+    "url": "https://github.com/moontai0724/flickr-sdk/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/moontai0724/package-template.git"
+    "url": "https://github.com/moontai0724/flickr-sdk.git"
   },
   "keywords": [
     "package",
