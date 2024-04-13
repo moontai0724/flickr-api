@@ -1,4 +1,4 @@
-import type { Transport } from "./types";
+import type { GetOptions, PostOptions, Transport } from "./types";
 
 export interface FlickrAPIResponse {
   stat: "ok" | "fail";
@@ -8,19 +8,6 @@ export interface FailedResponse extends FlickrAPIResponse {
   code: number;
   message: string;
   stat: "fail";
-}
-
-interface BaseOptions {
-  oauth?: boolean;
-  payload?: URLSearchParams | FormData;
-}
-
-export interface GetOptions extends BaseOptions {
-  payload?: URLSearchParams;
-}
-
-export interface PostOptions extends BaseOptions {
-  payload?: FormData;
 }
 
 export interface FlickrTransportOptions {
@@ -60,12 +47,12 @@ export class FlickrTransport implements Transport {
   async post<T>(
     options: PostOptions,
   ): Promise<T extends FlickrAPIResponse ? T : never> {
-    const { payload } = options;
+    const { payload = {} } = options;
 
     const url = new URL(this.endpoint);
     const body = new FormData();
 
-    payload?.forEach((value, key) => {
+    Object.entries(payload).forEach(([key, value]) => {
       body.append(key, value);
     });
 
