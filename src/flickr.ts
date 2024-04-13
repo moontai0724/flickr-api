@@ -3,8 +3,8 @@ import { FlickrTransport, type Transport } from "./base";
 import {
   ActiveRecordFactory,
   type ActiveRecordPrototypes,
-} from "./modules/active-record.factory";
-import { RepositoryFactory } from "./modules/repository.factory";
+} from "./rest/active-record.factory";
+import { RepositoryFactory } from "./rest/repository.factory";
 
 export interface FlickrOptions {
   apiKey: string;
