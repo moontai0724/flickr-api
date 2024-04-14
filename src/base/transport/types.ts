@@ -1,16 +1,11 @@
-export interface BaseOptions {
-  payload?: BodyInit | Record<string, string>;
-}
+import type { RequestPayload } from "oauth";
 
-export interface GetOptions extends BaseOptions {
-  payload?: URLSearchParams | Record<string, string>;
-}
-
-export interface PostOptions extends BaseOptions {
-  payload?: FormData | Record<string, string>;
+export interface TransportRequestOptions {
+  oauth?: boolean;
+  payload?: RequestPayload;
 }
 
 export interface Transport {
-  get<R>(options: GetOptions): Promise<R>;
-  post<R>(options: PostOptions): Promise<R>;
+  get<R>(options: TransportRequestOptions): Promise<R>;
+  post<R>(options: TransportRequestOptions): Promise<R>;
 }

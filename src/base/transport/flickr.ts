@@ -1,4 +1,11 @@
-import type { GetOptions, PostOptions, Transport } from "./types";
+import {
+  type OAuthConsumerCredential,
+  type OAuthCredentials,
+  type OAuthUserCredential,
+  RequestPayload,
+} from "oauth";
+
+import type { Transport, TransportRequestOptions } from "./types";
 
 export interface FlickrAPIResponse {
   stat: "ok" | "fail";
@@ -10,8 +17,13 @@ export interface FailedResponse extends FlickrAPIResponse {
   stat: "fail";
 }
 
-export interface FlickrTransportOptions {
-  apiKey: string;
+export interface FlickrTransportOptions
+  extends Partial<OAuthConsumerCredential>,
+    Partial<OAuthUserCredential> {
+  /**
+   * Your Flickr API key, a.k.a. consumer key.
+   */
+  consumerKey: string;
 }
 
 async function fetchJson<R>(...args: Parameters<typeof fetch>): Promise<R> {
@@ -30,29 +42,32 @@ export class FlickrTransport implements Transport {
 
   constructor(protected options: FlickrTransportOptions) {}
 
-  private constructRequest(options: GetOptions | PostOptions) {
-    const url = new URL(this.endpoint);
+  private constructPayload(method: string, options: TransportRequestOptions) {
     const { payload: fromPayload = {} } = options;
-    const payload =
-      fromPayload instanceof FormData ? new FormData() : new URLSearchParams();
-
-    Object.entries(fromPayload).forEach(([key, value]) => {
-      payload.append(key, value);
-    });
+    const payload = new RequestPayload(fromPayload);
 
     payload.append("format", "json");
-    payload.append("api_key", this.options.apiKey);
 
-    return {
-      url,
-      payload,
-    };
+    if (!options.oauth) {
+      payload.append("api_key", this.options.consumerKey);
+
+      return payload;
+    }
+
+    if (!this.options.consumerSecret) {
+      throw new Error("consumerSecret is required to use OAuth");
+    }
+
+    payload.sign(method, this.endpoint, this.options as OAuthCredentials);
+
+    return payload;
   }
 
   async get<R>(
-    options: GetOptions,
+    options: TransportRequestOptions,
   ): Promise<R extends FlickrAPIResponse ? R : never> {
-    const { url, payload } = this.constructRequest(options);
+    const url = new URL(this.endpoint);
+    const payload = this.constructPayload("GET", options);
 
     url.search = payload.toString();
 
@@ -60,12 +75,15 @@ export class FlickrTransport implements Transport {
   }
 
   async post<R>(
-    options: PostOptions,
+    options: TransportRequestOptions,
   ): Promise<R extends FlickrAPIResponse ? R : never> {
-    const { url, payload } = this.constructRequest(options);
+    const url = new URL(this.endpoint);
+    const payload = this.constructPayload("POST", options);
+
+    const body = payload.toFormData();
 
     return fetchJson(url, {
-      body: payload,
+      body,
     });
   }
 }

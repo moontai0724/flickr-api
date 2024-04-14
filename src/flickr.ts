@@ -1,15 +1,23 @@
 /* eslint-disable @typescript-eslint/no-unsafe-declaration-merging */
-import { FlickrTransport, type Transport } from "./base";
+import {
+  FlickrTransport,
+  type FlickrTransportOptions,
+  type Transport,
+} from "./base";
 import {
   ActiveRecordFactory,
   type ActiveRecordPrototypes,
 } from "./rest/active-record.factory";
 import { RepositoryFactory } from "./rest/repository.factory";
 
-export interface FlickrOptions {
-  apiKey: string;
-  transport?: Transport;
+interface WithCredential {
+  credentials: FlickrTransportOptions;
 }
+interface WithTransport {
+  transport: Transport;
+}
+
+export type FlickrOptions = WithCredential | WithTransport;
 
 export interface Flickr extends ActiveRecordPrototypes {}
 export class Flickr {
@@ -20,7 +28,10 @@ export class Flickr {
   public readonly activeRecordFactory: ActiveRecordFactory;
 
   constructor(protected readonly options: FlickrOptions) {
-    this.transport = options.transport || new FlickrTransport(options);
+    this.transport =
+      "transport" in options
+        ? options.transport
+        : new FlickrTransport(options.credentials);
 
     this.repositoryFactory = new RepositoryFactory(this.transport);
     this.activeRecordFactory = new ActiveRecordFactory(this.repositoryFactory);

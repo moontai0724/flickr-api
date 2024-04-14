@@ -1,3 +1,5 @@
+import { RequestPayload } from "oauth";
+
 import type { PhotoSetRepository } from ".";
 
 export interface PhotoSetCreateOptions {
@@ -41,7 +43,7 @@ export async function create(
   this: PhotoSetRepository,
   options: PhotoSetCreateOptions,
 ) {
-  const payload = new FormData();
+  const payload = new RequestPayload();
 
   payload.append("action", "flickr.photosets.create");
 
